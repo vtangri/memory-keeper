@@ -14,6 +14,8 @@ class ConversationContext:
         self.history: List[Dict[str, str]] = [] # list of {role, content, timestamp}
         self.current_topic: str = "general"
         self.exhausted_topics: List[str] = []
+        self.used_questions: set = set() # Track asked questions to prevent repeats
+        self.start_time = datetime.now()
         self.start_time = datetime.now()
         self.turn_count = 0
         self.state = "ACTIVE" # ACTIVE, PAUSED, ENDED
@@ -66,8 +68,10 @@ class ContextManager:
         response_text = await self.llm_client.generate_follow_up(
             history=ctx.history,
             current_topic=ctx.current_topic,
-            user_response_length=length_category
+            user_response_length=length_category,
+            exclude_questions=list(ctx.used_questions)
         )
+        ctx.used_questions.add(response_text)
         
         # 5. Update History with AI response
         ctx.history.append({

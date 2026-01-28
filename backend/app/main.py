@@ -104,8 +104,9 @@ def get_story(story_id: str):
     raise HTTPException(status_code=404, detail="Story not found")
 
 # Chat endpoint mock (keeping existing functionality if needed or using the real one if it was integrated)
-from app.services.nlp.llm_client import LLMClient
-llm_client = LLMClient()
+# Chat endpoint mock (keeping existing functionality if needed or using the real one if it was integrated)
+from app.services.conversation_manager import ContextManager
+context_manager = ContextManager()
 
 class ChatRequest(BaseModel):
     text: str
@@ -113,18 +114,33 @@ class ChatRequest(BaseModel):
 
 @app.post("/api/v1/chat/send")
 async def chat_send(request: ChatRequest):
-    # Use the smart heuristic client
-    # Construct a temporary history for the stateless request
-    history = [{"role": "user", "content": request.text}]
-    
-    # Determine length category for the client
-    length = "short" if len(request.text.split()) < 10 else "medium"
-    
-    reply = await llm_client.generate_follow_up(
-        history=history,
-        current_topic="general", # The client logic will auto-detect topic from text
-        user_response_length=length
-    )
+    # Ensure session exists
+    session = context_manager.get_session(request.session_id)
+    if not session:
+        context_manager.create_session(request.session_id)
+        # Hack to force specific ID if needed, but create_session generates one if not passed.
+        # Actually context_manager.create_session takes user_id and returns session_id.
+        # But our FE sends a session_id "demo_user".
+        # Let's adjust create_session or just manually inject for this demo.
+        # Re-reading conversation_manager.py: create_session(user_id) -> session_id.
+        # It stores in active_sessions[ctx.session_id]
+        
+        # Let's interact with it properly.
+        # If the FE sends "demo_user" as session_id effectively, we should map that.
+        # For simplicity in this demo:
+        context_manager.active_sessions[request.session_id] = \
+            context_manager.active_sessions.get(request.session_id) or \
+            context_manager.create_session_with_id(request.session_id, "user_1")
+
+    # The ContextManager doesn't expose create_session_with_id. 
+    # Let's just do:
+    if request.session_id not in context_manager.active_sessions:
+        # Create a context manually and inject it to force the ID from FE
+        from app.services.conversation_manager import ConversationContext
+        ctx = ConversationContext(user_id="user_1", session_id=request.session_id)
+        context_manager.active_sessions[request.session_id] = ctx
+
+    reply = await context_manager.process_user_input(request.session_id, request.text)
     
     return {
         "reply": reply,
