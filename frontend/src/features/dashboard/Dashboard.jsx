@@ -20,31 +20,44 @@ const PerspectiveCard = ({ children, className, onClick }) => (
 const clsx = (...args) => args.filter(Boolean).join(' ');
 
 const Dashboard = () => {
-  const stats = [
-    { label: "Chapters", value: "24", icon: Book, color: "bg-brand-500", trend: "+3 this month" },
-    { label: "Audio Hours", value: "18.4", icon: Layers, color: "bg-sage-500", trend: "+2.1 hrs" },
-    { label: "Family Views", value: "152", icon: Users, color: "bg-fuchsia-500", trend: "12 active now" },
-  ];
-
+  const [stats, setStats] = React.useState([]);
+  const [timelineEvents, setTimelineEvents] = React.useState([]);
   const [stories, setStories] = React.useState([]);
 
+  // Icon mapping
+  const iconMap = {
+    "Book": Book,
+    "Layers": Layers,
+    "Users": Users
+  };
+
   React.useEffect(() => {
-    const fetchStories = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/stories');
-        setStories(response.data);
+        const [storiesRes, statsRes, timelineRes] = await Promise.all([
+          axios.get('http://localhost:8000/api/v1/stories'),
+          axios.get('http://localhost:8000/api/v1/dashboard/stats'),
+          axios.get('http://localhost:8000/api/v1/dashboard/timeline')
+        ]);
+        
+        setStories(storiesRes.data);
+        
+        // Transform stats to include components
+        const transformedStats = statsRes.data.map(stat => ({
+            ...stat,
+            icon: iconMap[stat.icon] || Book // fallback
+        }));
+        setStats(transformedStats);
+        
+        setTimelineEvents(timelineRes.data);
+        
       } catch (error) {
-        console.error("Failed to fetch stories", error);
+        console.error("Failed to fetch dashboard data", error);
       }
     };
-    fetchStories();
+    fetchDashboardData();
   }, []);
 
-  const timelineEvents = [
-    { year: 1952, title: "The Great Winter", desc: "A snowy birth in the heart of Ohio." },
-    { year: 1965, title: "First Guitar", desc: "Learning to play 'Yesterday' in the basement." },
-    { year: 1972, title: "Summer of '72", desc: "Crossing the country in a beat-up VW bus." },
-  ];
 
   return (
     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-10 duration-1000">

@@ -25,6 +25,31 @@ class Story(BaseModel):
     content: str  # The full text or summary
     audio_url: Optional[str] = None
 
+class DashboardStat(BaseModel):
+    label: str
+    value: str
+    icon: str  # We'll pass the icon name, frontend maps it
+    color: str
+    trend: str
+
+class TimelineEvent(BaseModel):
+    year: int
+    title: str
+    desc: str
+
+MOCK_STATS = [
+    DashboardStat(label="Chapters", value="25", icon="Book", color="bg-brand-500", trend="+4 this month"),
+    DashboardStat(label="Audio Hours", value="19.2", icon="Layers", color="bg-sage-500", trend="+2.9 hrs"),
+    DashboardStat(label="Family Views", value="168", icon="Users", color="bg-fuchsia-500", trend="14 active now"),
+]
+
+MOCK_TIMELINE = [
+    TimelineEvent(year=1952, title="The Great Winter", desc="A snowy birth in the heart of Ohio."),
+    TimelineEvent(year=1965, title="First Guitar", desc="Learning to play 'Yesterday' in the basement."),
+    TimelineEvent(year=1972, title="Summer of '72", desc="Crossing the country in a beat-up VW bus."),
+    TimelineEvent(year=1985, title="Career Shift", desc="Starting the new business in Chicago."),
+]
+
 MOCK_STORIES = [
     Story(
         id="1",
@@ -62,6 +87,14 @@ def health_check():
 @app.get("/api/v1/stories", response_model=List[Story])
 def get_stories():
     return MOCK_STORIES
+
+@app.get("/api/v1/dashboard/stats", response_model=List[DashboardStat])
+def get_dashboard_stats():
+    return MOCK_STATS
+
+@app.get("/api/v1/dashboard/timeline", response_model=List[TimelineEvent])
+def get_dashboard_timeline():
+    return MOCK_TIMELINE
 
 @app.get("/api/v1/stories/{story_id}", response_model=Story)
 def get_story(story_id: str):
