@@ -81,9 +81,14 @@ This is your interview space. The AI acts as a gentle biographer.
 
 **Example Scenario:**
 
-- **User Types/Says:** _"I remember the summer of 1969. We drove across the country in an old van."_
-- **AI Responds:** _"That sounds like quite an adventure! Who was with you on that trip, and do you recall any specific stop that left a lasting impression?"_
-- **User:** _"It was just me and my brother. We stopped at the Grand Canyon..."_
+1.  **User Types/Says:** _"I remember the summer of 1969. We drove across the country in an old van."_
+2.  **AI Responds:** _"That sounds like quite an adventure! Who was with you on that trip, and do you recall any specific stop that left a lasting impression?"_
+3.  **User:** _"It was just me and my brother. We stopped at the Grand Canyon. It was huge."_
+4.  **AI Responds:** _"The Grand Canyon is breathtaking. Standing there with your brother, do you remember how you felt looking out at that vastness? Was it peaceful, or were you overwhelmed?"_
+5.  **User:** _"We felt small. We just sat on the hood of the van and watched the sunset. Ideally, we didn't say much."_
+6.  **AI Responds:** _"Those quiet moments often speak the loudest. Watching that sunset, did you two talk about your future, or were you just enjoying the freedom of the road?"_
+7.  **User:** _"We talked about our dad. He had just passed away. This trip was kind of our goodbye."_
+8.  **AI Responds:** _"I'm so touched you shared that. It sounds like a profound healing journey. Traveling in his memory must have brought up many emotions. What is one specific thing about your dad that you remembered laughing about during that trip?"_
 
 **How to Use:**
 
