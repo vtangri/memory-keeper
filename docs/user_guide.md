@@ -71,33 +71,54 @@ The backend powers the AI conversation and story analysis.
 
 ---
 
-## 🌟 Part 2: Feature Walkthrough
+## 🌟 Part 2: Feature Walkthrough with Examples
 
 Once everything is running, open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ### 1. The Conversations Page (Home)
 
-This is where the magic happens.
+This is your interview space. The AI acts as a gentle biographer.
 
-- **Start Talking**: Type a memory into the input bar (e.g., _"I remember my first bicycle..."_) or click the **Microphone** to simulate voice recording.
-- **Interactive AI**: The AI will ask follow-up questions. It's designed to be empathetic and encouraging.
-- **Voice Player**: Listen to AI responses by clicking the **Volume** icon on any message bubble.
+**Example Scenario:**
+
+- **User Types/Says:** _"I remember the summer of 1969. We drove across the country in an old van."_
+- **AI Responds:** _"That sounds like quite an adventure! Who was with you on that trip, and do you recall any specific stop that left a lasting impression?"_
+- **User:** _"It was just me and my brother. We stopped at the Grand Canyon..."_
+
+**How to Use:**
+
+1.  **Type or Talk**: Click the microphone for voice mode.
+2.  **Listen**: Click the volume icon on the AI's message to hear it spoken aloud (great for accessibility).
+3.  **Auto-Save**: Notice the "Autosaved" indicator at the bottom; your stories are safe.
 
 ### 2. The Family Dashboard (Exploration)
 
-Click **"Exploration"** in the top navigation bar.
+Click **"Exploration"** to see your digital archive.
 
-- **Stats at a Glance**: See how many "Chapters" you've recorded and total "Audio Hours".
-- **Recent Narratives**: A list of your latest stories. Each card shows the date, duration, and AI-detected tags (e.g., _Family, Travel_).
-- **Heritage Timeline**: On the right, see your life events plotted vertically by year.
+**Detailed Breakdown:**
+
+- **Stats Cards**:
+  - _Chapters_: **24** (Total stories told).
+  - _Audio Hours_: **18.4** (Total time recorded).
+  - _Family Views_: **152** (How many times memories were accessed).
+- **Heritage Timeline**:
+  - **1952**: "The Great Winter" (Born in Ohio).
+  - **1965**: "First Guitar" (Learning to play music).
+  - **1972**: "Summer Trip" (The van story).
+- **Recent Narratives**: A card list of your latest sessions, tagged automatically (e.g., _#Travel_, _#Family_).
 
 ### 3. Memory Detail View
 
-Click on any **Story Card** in the dashboard (e.g., _"Memories of the Old Dock"_).
+Click on a story card like **"Memories of the Old Dock"** to see the full record.
 
-- **Read**: View the full transcript of the story, beautifully formatted.
-- **Listen**: Use the built-in audio player to hear the original recording.
-- **Download**: Save the story to your device.
+**What you'll see:**
+
+- **A "Storybook" Title**: Large, elegant typography.
+- **Context Tags**: `CHILDHOOD` `FAMILY` `NATURE` (Detected by AI).
+- **The Narrative**:
+  > _"I remember the old dock down by the bay. We used to go there every summer. The wood was weathered and gray, smelling of salt and memories..."_
+- **Voice Record**: A player bar `[ ▶ ────────── 04:12 ]` to hear the original voice clip.
+- **Actions**: Buttons to **Download** the text or **Share** the link with family.
 
 ---
 
