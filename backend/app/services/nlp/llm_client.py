@@ -63,11 +63,48 @@ class LLMClient:
         # response = openai.ChatCompletion.create(...)
         
         # Heuristic implementation for prototype:
-        questions = self.templates.get(current_topic, self.templates["general"])
+        text_lower = last_user_msg.lower()
+        
+        # dynamic topic detection based on keywords
+        if any(word in text_lower for word in ["mom", "dad", "brother", "sister", "grandma", "grandpa", "family"]):
+            current_topic = "family"
+        elif any(word in text_lower for word in ["job", "work", "office", "boss", "career", "school", "college"]):
+            current_topic = "career"
+        elif any(word in text_lower for word in ["trip", "travel", "vacation", "road", "visit", "summer"]):
+            current_topic = "travel"
+        elif any(word in text_lower for word in ["sad", "cry", "miss", "lost", "passed away", "died", "gone"]):
+            current_topic = "emotional"
+
+        # Expanded template library
+        if current_topic not in self.templates:
+            # Add dynamic templates if missing
+            if current_topic == "family":
+                questions = [
+                    "Family bonds are so special. What is one tradition you all shared?",
+                    "How did your relationship with them shape who you are today?",
+                    "Do you have a favorite photograph of you two together?"
+                ]
+            elif current_topic == "travel":
+                 questions = [
+                    "Traveling often changes our perspective. Did this trip change how you saw the world?",
+                    "What was the most unexpected thing that happened on that journey?",
+                    "If you could go back to that place today, would you?"
+                 ]
+            elif current_topic == "emotional":
+                 questions = [
+                    "I'm so touched you shared that. It sounds like a profound moment. How did you find comfort during that time?",
+                    "Those memories are heavy but beautiful. What is one thing about them that brings a smile to your face now?",
+                    "Thank you for trusting me with this. Do you feel that experience made you stronger?"
+                 ]
+            else:
+                questions = self.templates["general"]
+        else:
+             questions = self.templates[current_topic]
+
         selected_question = random.choice(questions)
         
         if user_response_length == "short":
-             return f"That's interesting. {selected_question} Was it a happy time?" # Append simple yes/no hook
+             return f"That's interesting. {selected_question} Was it a vivid memory for you?"
              
         return selected_question
 

@@ -71,10 +71,8 @@ def get_story(story_id: str):
     raise HTTPException(status_code=404, detail="Story not found")
 
 # Chat endpoint mock (keeping existing functionality if needed or using the real one if it was integrated)
-from app.services.conversation_manager import ContextManager
-# context_manager = ContextManager() 
-# For now, simplistic echo or mock if ContextManager isn't fully wired in this single file view
-# In a real app, we'd import the router.
+from app.services.nlp.llm_client import LLMClient
+llm_client = LLMClient()
 
 class ChatRequest(BaseModel):
     text: str
@@ -82,8 +80,20 @@ class ChatRequest(BaseModel):
 
 @app.post("/api/v1/chat/send")
 async def chat_send(request: ChatRequest):
-    # Mock response for now to ensure UI works, or use the ContextManager if instantiated
+    # Use the smart heuristic client
+    # Construct a temporary history for the stateless request
+    history = [{"role": "user", "content": request.text}]
+    
+    # Determine length category for the client
+    length = "short" if len(request.text.split()) < 10 else "medium"
+    
+    reply = await llm_client.generate_follow_up(
+        history=history,
+        current_topic="general", # The client logic will auto-detect topic from text
+        user_response_length=length
+    )
+    
     return {
-        "reply": f"That's a fascinating detail about '{request.text}'. Tell me more about how you felt in that moment?",
+        "reply": reply,
         "sentiment": "positive"
     }
