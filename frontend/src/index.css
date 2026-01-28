@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #335eff;
+  --secondary: #10b981;
+  --krem: #FAF9F6;
+}
+
+@layer base {
+  body {
+    @apply antialiased text-slate-800 bg-heritage-krem min-h-screen selection:bg-brand-100 selection:text-brand-900;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply tracking-tight font-semibold text-slate-900;
+    font-family: 'Crimson Pro', serif;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass;
+  }
+  
+  .glass-dark {
+    @apply bg-slate-900/10 backdrop-blur-md border border-white/10;
+  }
+
+  .nav-link {
+    @apply relative py-2 text-sm font-semibold text-slate-500 transition-all hover:text-brand-600 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all hover:after:w-full;
+  }
+
+  .nav-link-active {
+    @apply text-brand-600 after:w-full;
+  }
+
+  .button-premium {
+    @apply px-8 py-3 bg-brand text-white rounded-2xl font-bold shadow-lg shadow-brand/20 hover:shadow-xl hover:shadow-brand/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300;
+  }
+
+  .button-ghost {
+    @apply px-8 py-3 bg-white/50 text-slate-600 border border-slate-200 rounded-2xl font-bold hover:bg-white hover:border-brand/30 transition-all;
+  }
+}
+
+/* Custom Utilities */
+.text-balance {
+  text-wrap: balance;
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-br from-brand-600 to-indigo-800;
+}
+
+.bg-pattern {
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(51, 94, 255, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 40%);
+}
