@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Mic, Sparkles, BookOpen, Clock, ChevronRight, Volume2, History } from 'lucide-react';
 import MessageBubble from './MessageBubble';
@@ -12,7 +13,9 @@ const ChatInterface = () => {
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const scrollRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -56,6 +59,21 @@ const ChatInterface = () => {
     }
   };
 
+  const handleFinish = async () => {
+     setIsSaving(true);
+     try {
+       await axios.post('http://localhost:8000/api/v1/chat/save', {
+         text: "SAVE_TRIGGER", // content doesn't matter, backend uses session
+         session_id: "demo_user"
+       });
+       navigate('/dashboard');
+     } catch (error) {
+       console.error("Failed to save story", error);
+       alert("Failed to save memory. Please try again.");
+       setIsSaving(false);
+     }
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] max-w-5xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
@@ -70,16 +88,22 @@ const ChatInterface = () => {
         </div>
         
         <div className="flex items-center space-x-4">
-           <div className="flex -space-x-3">
-             {[1,2,3].map(i => (
-               <div key={i} className="w-10 h-10 rounded-full border-2 border-heritage-krem bg-brand-100 flex items-center justify-center text-[10px] font-bold text-brand shadow-sm">
-                 {String.fromCharCode(64 + i)}
-               </div>
-             ))}
-           </div>
-           <p className="text-sm font-medium text-slate-500">
-             <span className="text-slate-900 font-bold">12 stories</span> recorded this week
-           </p>
+           <button 
+             onClick={handleFinish}
+             disabled={isSaving}
+             className="px-6 py-3 bg-brand text-white font-bold rounded-2xl hover:bg-brand-600 transition-all shadow-lg shadow-brand/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait"
+           >
+             {isSaving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Saving...
+                </>
+             ) : (
+                <>
+                  <BookOpen size={18} /> Finish & Save
+                </>
+             )}
+           </button>
         </div>
       </div>
 

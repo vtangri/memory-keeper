@@ -90,3 +90,17 @@ class ContextManager:
             ctx.current_topic = new_topic
             return True
         return False
+
+    def reset_session(self, session_id: str):
+        """
+        Resets the session state (clears history, resets topic) for a fresh start.
+        """
+        ctx = self.get_session(session_id)
+        if ctx:
+            ctx.history = []
+            ctx.current_topic = "general"
+            ctx.turn_count = 0
+            ctx.used_questions = set()
+            ctx.start_time = datetime.now()
+            return True
+        return False

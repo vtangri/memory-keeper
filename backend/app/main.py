@@ -23,6 +23,7 @@ class Story(BaseModel):
     duration: str
     topics: List[str]
     content: str  # The full text or summary
+    transcript: Optional[List[dict]] = None # List of {role, content}
     audio_url: Optional[str] = None
 
 class DashboardStat(BaseModel):
@@ -37,11 +38,7 @@ class TimelineEvent(BaseModel):
     title: str
     desc: str
 
-MOCK_STATS = [
-    DashboardStat(label="Chapters", value="25", icon="Book", color="bg-brand-500", trend="+4 this month"),
-    DashboardStat(label="Audio Hours", value="19.2", icon="Layers", color="bg-sage-500", trend="+2.9 hrs"),
-    DashboardStat(label="Family Views", value="168", icon="Users", color="bg-fuchsia-500", trend="14 active now"),
-]
+# Removed MOCK_STATS constant as we will generate it dynamically
 
 MOCK_TIMELINE = [
     TimelineEvent(year=1952, title="The Great Winter", desc="A snowy birth in the heart of Ohio."),
@@ -58,6 +55,12 @@ MOCK_STORIES = [
         duration="12 mins",
         topics=["Childhood", "Family", "Travel"],
         content="I remember the old dock down by the bay. We used to go there every summer. The wood was weathered and gray, smelling of salt and memories. My grandfather taught me how to fish there. We would sit for hours, just watching the bobbers dance on the water. It wasn't really about the fish, you know? It was about the silence, the shared peace. I can still hear the creaking of the wood and the gentle lap of the waves.",
+        transcript=[
+            {"role": "ai", "content": "What is a favorite place from your childhood?"},
+            {"role": "user", "content": "The old dock by the bay."},
+            {"role": "ai", "content": "What did it smell like?"},
+            {"role": "user", "content": "Salt and old wood."}
+        ],
         audio_url="mock_audio.mp3"
     ),
     Story(
@@ -80,6 +83,13 @@ MOCK_STORIES = [
     )
 ]
 
+from app.services.conversation_manager import ContextManager
+context_manager = ContextManager()
+
+class ChatRequest(BaseModel):
+    text: str
+    session_id: str
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
@@ -90,7 +100,62 @@ def get_stories():
 
 @app.get("/api/v1/dashboard/stats", response_model=List[DashboardStat])
 def get_dashboard_stats():
-    return MOCK_STATS
+    # Calculate stats dynamically based on MOCK_STORIES
+    total_chapters = len(MOCK_STORIES)
+    
+    # Calculate total duration manually or semi-randomly for mock
+    total_duration = 0.0
+    for s in MOCK_STORIES:
+        # crude parsing of "12 mins"
+        try:
+            minutes = int(s.duration.split()[0])
+            total_duration += minutes
+        except:
+            total_duration += 10 # fallback
+            
+    total_hours = round(total_duration / 60, 1)
+    
+    # Dynamic Family Views (mock logic: 10 views per story + some variation)
+    family_views = 0
+    for s in MOCK_STORIES:
+        family_views += 10 + (int(s.id) * 2 % 7)
+
+    return [
+        DashboardStat(label="Chapters", value=str(total_chapters), icon="Book", color="bg-brand-500", trend="+1 this session"),
+        DashboardStat(label="Audio Hours", value=str(total_hours), icon="Layers", color="bg-sage-500", trend=f"{total_hours} hrs total"),
+        DashboardStat(label="Family Views", value=str(family_views), icon="Users", color="bg-fuchsia-500", trend="Active now"),
+    ]
+
+@app.post("/api/v1/chat/save")
+async def save_chat(request: ChatRequest):
+    # Retrieve session
+    session = context_manager.get_session(request.session_id)
+    if not session or not session.history:
+        raise HTTPException(status_code=400, detail="No active conversation to save")
+        
+    # Generate a title (mocked or simple heuristic)
+    # in real app, we'd use LLM to summarize
+    first_user_msg = next((m['content'] for m in session.history if m['role'] == 'user'), "New Memory")
+    title = "Memory: " + (first_user_msg[:20] + "..." if len(first_user_msg) > 20 else first_user_msg)
+    
+    # Construct Story object
+    new_story = Story(
+        id=str(len(MOCK_STORIES) + 1), # simple increment ID
+        title=title,
+        date=datetime.date.today().strftime("%b %d, %Y"),
+        duration=f"{session.turn_count * 2} mins", # mock duration based on turns
+        topics=[session.current_topic.capitalize()],
+        content="\n\n".join([f"{m['role'].upper()}: {m['content']}" for m in session.history]),
+        transcript=session.history,
+        audio_url="mock_audio_new.mp3"
+    )
+    
+    MOCK_STORIES.insert(0, new_story) # Add to top
+    
+    # Reset the session to allow a fresh start
+    context_manager.reset_session(request.session_id)
+    
+    return {"status": "success", "story_id": new_story.id}
 
 @app.get("/api/v1/dashboard/timeline", response_model=List[TimelineEvent])
 def get_dashboard_timeline():
@@ -103,14 +168,8 @@ def get_story(story_id: str):
             return story
     raise HTTPException(status_code=404, detail="Story not found")
 
-# Chat endpoint mock (keeping existing functionality if needed or using the real one if it was integrated)
-# Chat endpoint mock (keeping existing functionality if needed or using the real one if it was integrated)
-from app.services.conversation_manager import ContextManager
-context_manager = ContextManager()
-
-class ChatRequest(BaseModel):
-    text: str
-    session_id: str
+# Chat endpoint mock
+# (Chat functionality implemented below)
 
 @app.post("/api/v1/chat/send")
 async def chat_send(request: ChatRequest):
@@ -128,9 +187,10 @@ async def chat_send(request: ChatRequest):
         # Let's interact with it properly.
         # If the FE sends "demo_user" as session_id effectively, we should map that.
         # For simplicity in this demo:
-        context_manager.active_sessions[request.session_id] = \
-            context_manager.active_sessions.get(request.session_id) or \
-            context_manager.create_session_with_id(request.session_id, "user_1")
+        # If the FE sends "demo_user", we manually ensure a context exists for it.
+        # We don't use create_session() because that generates a random UUID.
+        pass
+
 
     # The ContextManager doesn't expose create_session_with_id. 
     # Let's just do:

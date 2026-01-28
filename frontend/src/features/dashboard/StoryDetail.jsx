@@ -9,6 +9,42 @@ const StoryDetail = () => {
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const utteranceRef = React.useRef(null);
+
+  // Cleanup speech on unmount
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  const handlePlayPause = () => {
+    if (isPlaying) {
+      window.speechSynthesis.pause();
+      setIsPlaying(false);
+    } else {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        setIsPlaying(true);
+      } else {
+        // Start fresh
+        window.speechSynthesis.cancel();
+        
+        const textToRead = story.transcript 
+          ? story.transcript.map(m => `${m.role === 'user' ? 'You said' : 'Memory Keeper said'}: ${m.content}`).join('. ')
+          : story.content;
+          
+        const utterance = new SpeechSynthesisUtterance(textToRead);
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.onend = () => setIsPlaying(false);
+        
+        utteranceRef.current = utterance;
+        window.speechSynthesis.speak(utterance);
+        setIsPlaying(true);
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchStory = async () => {
@@ -79,9 +115,28 @@ const StoryDetail = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-8">
           <div className="bg-white p-10 rounded-[2.5rem] shadow-premium leading-relaxed text-lg text-slate-700 font-serif">
-             <p className="first-letter:text-6xl first-letter:font-bold first-letter:float-left first-letter:mr-3 first-letter:text-brand">
-               {story.content}
-             </p>
+             {story.transcript ? (
+                <div className="space-y-6">
+                  {story.transcript.map((msg, idx) => (
+                    <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                       <div className={`max-w-[80%] p-6 rounded-2xl ${
+                         msg.role === 'user' 
+                           ? 'bg-brand-50 text-brand-900 rounded-tr-none' 
+                           : 'bg-slate-50 text-slate-800 rounded-tl-none border border-slate-100'
+                       }`}>
+                          <p className="text-xs font-bold uppercase tracking-widest mb-2 opacity-50">
+                            {msg.role === 'user' ? 'You' : 'Memory Keeper'}
+                          </p>
+                          <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                       </div>
+                    </div>
+                  ))}
+                </div>
+             ) : (
+                <p className="first-letter:text-6xl first-letter:font-bold first-letter:float-left first-letter:mr-3 first-letter:text-brand">
+                  {story.content}
+                </p>
+             )}
           </div>
         </div>
 
@@ -91,15 +146,15 @@ const StoryDetail = () => {
              <h3 className="font-bold text-slate-900 uppercase tracking-widest text-sm">Voice Record</h3>
              <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                 <button 
-                  onClick={() => setIsPlaying(!isPlaying)}
+                  onClick={handlePlayPause}
                   className="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center hover:bg-brand-600 transition-colors shadow-lg shadow-brand/20"
                 >
                   {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
                 </button>
                 <div className="flex-grow mx-4 h-1 bg-slate-100 rounded-full overflow-hidden">
-                   <div className="h-full bg-brand w-1/3 rounded-full"></div>
+                   <div className={`h-full bg-brand rounded-full transition-all duration-300 ${isPlaying ? 'w-full animate-pulse' : 'w-0'}`}></div>
                 </div>
-                <span className="text-xs font-bold text-slate-400">04:12</span>
+                <span className="text-xs font-bold text-slate-400">{isPlaying ? "Playing..." : "Listen"}</span>
              </div>
           </div>
 
